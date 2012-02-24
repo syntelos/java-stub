@@ -36,10 +36,14 @@ public class Target {
 
     public final Source source;
 
+    public final boolean doPrints;
+
 
     public Target(Arguments args, Source source){
         super();
         if (null != args){
+            this.doPrints = args.doPrint;
+
             if (null != args.target)
                 this.targetName = args.target;
             else
@@ -127,7 +131,40 @@ public class Target {
                         cc += 1;
                     }
                 }
-                out.println("){");
+                out.println(")");
+                if (method.hasExceptions()){
+                    out.print("        throws ");
+                    cc = 0;
+                    for (Source.Type xtype: method.exceptions()){
+
+                        if (0 != cc)
+                            out.print(", ");
+
+                        out.printf("%s",xtype.baseName);
+                        cc += 1;
+                    }
+                    out.println();
+                }
+                out.println("    {");
+                if (this.doPrints){
+                    out.printf( "        System.err.printf(\"%s(",method.name);
+                    cc = 0;
+                    for (Source.Type ptype: method.parameters()){
+                        if (0 != cc)
+                            out.print(", ");
+
+                        out.printf("%s",ptype.format);
+                        cc += 1;
+                    }
+                    out.print(")%n\"");
+                    cc = 0;
+                    for (Source.Type ptype: method.parameters()){
+
+                        out.printf(", %s",method.parameterName(cc));
+                        cc += 1;
+                    }
+                    out.println(");");
+                }
                 if (method.isNotVoid){
                     out.printf( "        return this.instance.%s(",method.name);
                 }

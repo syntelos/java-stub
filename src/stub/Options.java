@@ -20,7 +20,7 @@ package stub;
 
 public enum Options {
 
-    source (true,false), target (true,false), help (false,true);
+    source (true,false), target (true,false), help (false,true), print (false,false);
 
 
     public final boolean requiresArg, isHelp;

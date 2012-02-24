@@ -198,7 +198,7 @@ public class Source {
 
         public final int arrayDim;
 
-        public final String fullName, baseName, packageName, shortName, arraySuffix, fieldTypeName;
+        public final String fullName, baseName, packageName, shortName, arraySuffix, fieldTypeName, format;
 
         public final boolean isJavaLang, isPrimitive, isNotVoid, isArray, isInner;
 
@@ -229,46 +229,55 @@ public class Source {
                     this.baseName = "boolean";
                     this.shortName = "bool";
                     this.isNotVoid = true;
+                    this.format = "%b";
                 }
                 else if (java.lang.Character.TYPE == componentClass){
                     this.baseName = "char";
                     this.shortName = "ch";
                     this.isNotVoid = true;
+                    this.format = "%c";
                 }
                 else if (java.lang.Byte.TYPE == componentClass){
                     this.baseName = "byte";
                     this.shortName = "bb";
                     this.isNotVoid = true;
+                    this.format = "%d";
                 }
                 else if (java.lang.Short.TYPE == componentClass){
                     this.baseName = "short";
                     this.shortName = "sh";
                     this.isNotVoid = true;
+                    this.format = "%d";
                 }
                 else if (java.lang.Integer.TYPE == componentClass){
                     this.baseName = "int";
                     this.shortName = "a";
                     this.isNotVoid = true;
+                    this.format = "%d";
                 }
                 else if (java.lang.Long.TYPE == componentClass){
                     this.baseName = "long";
                     this.shortName = "lon";
                     this.isNotVoid = true;
+                    this.format = "%d";
                 }
                 else if (java.lang.Float.TYPE == componentClass){
                     this.baseName = "float";
                     this.shortName = "flo";
                     this.isNotVoid = true;
+                    this.format = "%f";
                 }
                 else if (java.lang.Double.TYPE == componentClass){
                     this.baseName = "double";
                     this.shortName = "dob";
                     this.isNotVoid = true;
+                    this.format = "%g";
                 }
                 else if (java.lang.Void.TYPE == componentClass){
                     this.baseName = "void";
                     this.shortName = "";
                     this.isNotVoid = false;
+                    this.format = "";
                 }
                 else
                     throw new IllegalStateException(componentClass.getName());
@@ -286,6 +295,7 @@ public class Source {
                 this.isPrimitive = false;
                 this.isNotVoid = true;
                 this.shortName = Decamel(this.baseName).replace('.','_');
+                this.format = "%s";
 
                 Class enclosingClass = componentClass.getEnclosingClass();
                 if (null == enclosingClass){

@@ -22,12 +22,12 @@ public class Arguments {
 
     public final String source, target;
 
-    public final boolean requireHelp;
+    public final boolean doPrint, requireHelp;
 
     public Arguments(String[] argv){
         super();
         String source = null, target = null;
-        boolean requireHelp = false;
+        boolean requireHelp = false, doPrint = false;
         for (int cc = 0, count = argv.length; cc < count; cc++){
             String arg = argv[cc];
             Options option = Options.For(arg);
@@ -50,12 +50,21 @@ public class Arguments {
                     requireHelp = true;
             }
             else {
-                requireHelp = (option.isHelp | requireHelp);
+                switch(option){
+                case print:
+                    doPrint = true;
+                    break;
+                case help:
+                    requireHelp = true;
+                default:
+                    throw new IllegalStateException(option.name());
+                }
             }
         }
         this.source = source;
         this.target = target;
         this.requireHelp = requireHelp; 
+        this.doPrint = doPrint;
     }
 
 }

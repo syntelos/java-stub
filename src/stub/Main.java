@@ -39,6 +39,14 @@ public class Main {
         System.err.println();
         System.err.println("Usage");
         System.err.println();
+        System.err.println("    stub.Main --print");
+        System.err.println();
+        System.err.println("Description");
+        System.err.println();
+        System.err.println("    Instrument stub class with 'System.err.print'.");
+        System.err.println();
+        System.err.println("Usage");
+        System.err.println();
         System.err.println("    stub.Main --source class.name --target file.java");
         System.err.println();
         System.err.println("Description");
