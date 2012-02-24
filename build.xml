@@ -1,0 +1,47 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<project name="stub" default="jar">
+
+  <property name="src" value="src"/>
+  <property name="bin" value="bin"/>
+  <property name="dst" value="${basedir}"/>
+  <property name="main" value="stub.Main"/>
+
+  <property name="compiler.source" value="1.5"/>
+  <property name="compiler.target" value="1.5"/>
+  <property name="compiler.debug" value="true"/>
+  <property name="compiler.encoding" value="utf-8"/>
+
+  <property file="build.version"/>
+  <fail unless="version.major"/>
+  <fail unless="version.minor"/>
+  <fail unless="version.build"/>
+
+  <property name="this.version" value="${version.major}.${version.minor}.${version.build}"/>
+
+  <property name="target.jar" value="${dst}/${ant.project.name}-${this.version}.jar"/>
+
+
+  <target name="jar" depends="compile" description="Package bin to target jar, clean bin.">
+
+    <delete file="${target.jar}"/>
+
+    <jar jarfile="${target.jar}" basedir="${bin}" >
+      <manifest>
+        <attribute name="Main-Class" value="${main}"/>
+      </manifest>
+    </jar>
+
+    <delete dir="${bin}"/>
+  </target>
+
+  <target name="compile" description="Compile src to bin">
+
+    <mkdir dir="${bin}"/>
+
+    <javac srcdir="${src}" destdir="${bin}" 
+           debug="${compiler.debug}" encoding="${compiler.encoding}"
+           source="${compiler.source}" target="${compiler.target}" />
+
+  </target>
+
+</project>
