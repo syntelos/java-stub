@@ -56,6 +56,7 @@ public class Arguments {
                     break;
                 case help:
                     requireHelp = true;
+                    break;
                 default:
                     throw new IllegalStateException(option.name());
                 }
