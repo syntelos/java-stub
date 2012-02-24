@@ -62,6 +62,7 @@ public class Main {
         System.err.println("    java -jar stub.jar ");
         System.err.println("         --source java.awt.Graphics2D");
         System.err.println("         --target ./src/local/DebugGraphics2D.java");
+        System.err.println("         --print");
         System.err.println();
     }
 
