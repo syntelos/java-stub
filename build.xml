@@ -40,7 +40,8 @@
 
     <javac srcdir="${src}" destdir="${bin}" 
            debug="${compiler.debug}" encoding="${compiler.encoding}"
-           source="${compiler.source}" target="${compiler.target}" />
+           source="${compiler.source}" target="${compiler.target}"
+           includeAntRuntime="false"/>
 
   </target>
 
