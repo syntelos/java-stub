@@ -116,46 +116,35 @@ public class Target {
             out.println();
             out.println();
             for (Source.Method method: this.source.methods()){
-                out.printf( "    public %s %s(",method.rtype.baseName,method.name);
+                out.printf( "    public %s %s(",method.rtype.fieldTypeName,method.name);
                 {
                     cc = 0;
                     for (Source.Type ptype: method.parameters()){
                         if (0 != cc)
                             out.print(", ");
 
-                        out.printf("%s %s",ptype.baseName,method.parameterName(cc));
+                        out.printf("%s %s",ptype.fieldTypeName,method.parameterName(cc));
                         cc += 1;
                     }
                 }
                 out.println("){");
                 if (method.isNotVoid){
                     out.printf( "        return this.instance.%s(",method.name);
-                    {
-                        cc = 0;
-                        for (Source.Type ptype: method.parameters()){
-                            if (0 != cc)
-                                out.print(", ");
-
-                            out.printf("%s %s",ptype.baseName,method.parameterName(cc));
-                            cc += 1;
-                        }
-                    }
-                    out.println(");");
                 }
                 else {
                     out.printf( "        this.instance.%s(",method.name);
-                    {
-                        cc = 0;
-                        for (Source.Type ptype: method.parameters()){
-                            if (0 != cc)
-                                out.print(", ");
-
-                            out.printf("%s",method.parameterName(cc));
-                            cc += 1;
-                        }
-                    }
-                    out.println(");");
                 }
+                {
+                    cc = 0;
+                    for (Source.Type ptype: method.parameters()){
+                        if (0 != cc)
+                            out.print(", ");
+
+                        out.printf("%s",method.parameterName(cc));
+                        cc += 1;
+                    }
+                }
+                out.println(");");
                 out.println("    }");
             }
         }

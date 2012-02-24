@@ -76,12 +76,15 @@ public class Source {
         /*
          * Collect types not "java.lang"
          */
-        Source.Type[] typeList = null;
+        Source.Type[] imports = null;
         for (Source.Type typeClass: typeMap.values()){
             if (!typeClass.isJavaLang)
-                typeList = Source.Type.Add(typeList,typeClass);
+                imports = Source.Type.Add(imports,typeClass);
         }
-        this.imports = typeList;
+        if (null != imports)
+            java.util.Arrays.sort(imports);
+
+        this.imports = imports;
     }
     public boolean hasMethods(){
         return (null != this.methods);
@@ -185,85 +188,132 @@ public class Source {
             throw new UnsupportedOperationException();
         }
     }
-    public static class Type {
+    public static class Type
+        extends Object
+        implements Comparable<Type>
+    {
 
 
-        public final Class typeClass;
+        public final Class typeClass, componentClass, enclosingClass;
 
-        public final String fullName, baseName, packageName, shortName;
+        public final int arrayDim;
 
-        public final boolean isJavaLang, isPrimitive, isNotVoid;
+        public final String fullName, baseName, packageName, shortName, arraySuffix, fieldTypeName;
+
+        public final boolean isJavaLang, isPrimitive, isNotVoid, isArray, isInner;
 
 
         public Type(Class typeClass){
             super();
-            if (typeClass.isPrimitive()){
 
-                this.typeClass = typeClass;
-                this.fullName = typeClass.getName();
+            this.typeClass = typeClass;
 
-                if (java.lang.Boolean.TYPE == typeClass){
+            Class componentClass = typeClass;
+            int arrayDim = 0;
+            while (componentClass.isArray()){
+                arrayDim += 1;
+                componentClass = componentClass.getComponentType();
+            }
+
+            this.fullName = componentClass.getName();
+
+            this.componentClass = componentClass;
+            this.isArray = (0 != arrayDim);
+            this.arrayDim = arrayDim;
+
+            this.arraySuffix = Type.ArraySuffix(arrayDim);
+
+            if (componentClass.isPrimitive()){
+
+                if (java.lang.Boolean.TYPE == componentClass){
                     this.baseName = "boolean";
                     this.shortName = "bool";
                     this.isNotVoid = true;
                 }
-                else if (java.lang.Character.TYPE == typeClass){
+                else if (java.lang.Character.TYPE == componentClass){
                     this.baseName = "char";
                     this.shortName = "ch";
                     this.isNotVoid = true;
                 }
-                else if (java.lang.Byte.TYPE == typeClass){
+                else if (java.lang.Byte.TYPE == componentClass){
                     this.baseName = "byte";
                     this.shortName = "bb";
                     this.isNotVoid = true;
                 }
-                else if (java.lang.Short.TYPE == typeClass){
+                else if (java.lang.Short.TYPE == componentClass){
                     this.baseName = "short";
                     this.shortName = "sh";
                     this.isNotVoid = true;
                 }
-                else if (java.lang.Integer.TYPE == typeClass){
+                else if (java.lang.Integer.TYPE == componentClass){
                     this.baseName = "int";
                     this.shortName = "a";
                     this.isNotVoid = true;
                 }
-                else if (java.lang.Long.TYPE == typeClass){
+                else if (java.lang.Long.TYPE == componentClass){
                     this.baseName = "long";
                     this.shortName = "lon";
                     this.isNotVoid = true;
                 }
-                else if (java.lang.Float.TYPE == typeClass){
+                else if (java.lang.Float.TYPE == componentClass){
                     this.baseName = "float";
                     this.shortName = "flo";
                     this.isNotVoid = true;
                 }
-                else if (java.lang.Double.TYPE == typeClass){
+                else if (java.lang.Double.TYPE == componentClass){
                     this.baseName = "double";
                     this.shortName = "dob";
                     this.isNotVoid = true;
                 }
-                else if (java.lang.Void.TYPE == typeClass){
+                else if (java.lang.Void.TYPE == componentClass){
                     this.baseName = "void";
                     this.shortName = "";
                     this.isNotVoid = false;
                 }
                 else
-                    throw new IllegalStateException(typeClass.getName());
+                    throw new IllegalStateException(componentClass.getName());
 
                 this.packageName = "java.lang";
                 this.isJavaLang = true;
                 this.isPrimitive = true;
+                this.isInner = false;
+                this.enclosingClass = null;
             }
             else {
-                this.typeClass = typeClass;
-                this.fullName = typeClass.getName();
-                this.baseName = Source.Basename(this.fullName);
+                this.baseName = Source.Basename(this.fullName).replace('$','.');
                 this.packageName = Source.PackageName(this.fullName);
                 this.isJavaLang = ("java.lang".equals(this.packageName));
                 this.isPrimitive = false;
                 this.isNotVoid = true;
-                this.shortName = Decamel(this.baseName);
+                this.shortName = Decamel(this.baseName).replace('.','_');
+
+                Class enclosingClass = componentClass.getEnclosingClass();
+                if (null == enclosingClass){
+                    this.isInner = false;
+                    this.enclosingClass = null;
+                }
+                else {
+                    Class enc = enclosingClass;
+                    while (null != enc){
+                        enclosingClass = enc;
+                        enc = enc.getEnclosingClass();
+                    }
+                    this.isInner = true;
+                    this.enclosingClass = enclosingClass;
+                }
             }
+            if (this.isArray)
+                this.fieldTypeName = this.baseName + this.arraySuffix;
+            else
+                this.fieldTypeName = this.baseName;
+        }
+
+
+        public int compareTo(Type that){
+            if (this == that)
+                return 0;
+            else
+                return this.fullName.compareTo(that.fullName);
         }
 
 
@@ -285,6 +335,20 @@ public class Source {
         public final static String Decamel(String name){
             return (name.substring(0,1).toLowerCase()+name.substring(1));
         }
+        public final static String ArraySuffix(int dim){
+            switch (dim){
+            case 0:
+                return "";
+            case 1:
+                return "[]";
+            default:
+                StringBuilder string = new StringBuilder();
+                for (int cc = 0; cc < dim; cc++){
+                    string.append("[]");
+                }
+                return string.toString();
+            }
+        }
         /**
          */
         public static class Map 
@@ -299,7 +363,16 @@ public class Source {
                 Source.Type value = super.get(typeClass);
                 if (null == value){
                     value = new Source.Type(typeClass);
-                    super.put(typeClass,value);
+                    if (value.isArray){
+                        
+                        this.get(value.componentClass);
+                    }
+                    else if (value.isInner){
+                        
+                        this.get(value.enclosingClass);
+                    }
+                    else
+                        super.put(typeClass,value);
                 }
                 return value;
             }
@@ -351,7 +424,7 @@ public class Source {
                         count = this.ptypes.length;
                         String[] pNames = new String[count];
                         for (int cc = 0; cc < count; cc++){
-                            pNames[cc] = this.ptypes[cc].shortName;
+                            pNames[cc] = this.ptypes[cc].shortName+cc;
                         }
                         this.pNames = pNames;
                     }
